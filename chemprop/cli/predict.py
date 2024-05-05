@@ -172,7 +172,7 @@ def find_models(model_path: Path):
     if model_path.suffix in [".ckpt", ".pt"]:
         return [model_path]
     elif model_path.is_dir():
-        return list(model_path.rglob("*.ckpt")) + list(model_path.rglob("*.pt"))
+        return list(model_path.rglob("best*.ckpt")) #+ list(model_path.rglob("*.pt"))
 
 
 def make_prediction_for_model(
@@ -298,12 +298,23 @@ def main(args):
 
     model_paths = find_models(args.model_path)
 
-    for i, model_path in enumerate(model_paths):
+    if len(model_paths) >1:
+
+
+        for i, model_path in enumerate(model_paths):
+            logger.info(f"Predicting with model at '{model_path}'")
+            output_path = args.output.parent / Path(
+                str(args.output.stem) + f"_{i}" + str(args.output.suffix)
+            )
+            make_prediction_for_model(args, model_path, multicomponent, output_path)
+    else:
+        model_path = model_paths[0]
         logger.info(f"Predicting with model at '{model_path}'")
         output_path = args.output.parent / Path(
-            str(args.output.stem) + f"_{i}" + str(args.output.suffix)
+            str(args.output.stem) + str(args.output.suffix)
         )
         make_prediction_for_model(args, model_path, multicomponent, output_path)
+
 
 
 if __name__ == "__main__":
